@@ -2,9 +2,6 @@
 // Created by thari on 09/04/2020.
 //
 
-#ifndef AWURUDU_REMOTELAMP_SERVER_LISTENNER_H
-#define AWURUDU_REMOTELAMP_SERVER_LISTENNER_H
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -29,6 +26,3 @@ public:
     int acceptNewClient();
     int stopListening();
 };
-
-
-#endif //AWURUDU_REMOTELAMP_SERVER_LISTENNER_H

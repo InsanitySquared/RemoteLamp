@@ -2,9 +2,6 @@
 // Created by thari on 4/3/2020.
 //
 
-#ifndef AWURUDU_REMOTELAMP_SERVER_IPCONNECTION_H
-#define AWURUDU_REMOTELAMP_SERVER_IPCONNECTION_H
-
 //#define debugOutput
 
 #include <sys/types.h>
@@ -34,5 +31,3 @@ public:
     int dataAvailable();
 
 };
-
-#endif //AWURUDU_REMOTELAMP_SERVER_IPCONNECTION_H
