@@ -1,0 +1,120 @@
+#include <iostream>
+#include <pthread.h>
+
+#include "listenner.h"
+#include "ipConnection.h"
+
+#define cliPORT 30000
+#define lamPort 30002
+#define maxThreads 40
+
+char buffer[bufflen];
+
+int lampFD;
+
+void *clientHandler(void *socFD){
+    int cliFD;
+    cliFD=*((int *) socFD);
+    std::cout<<"New client!"<<std::endl;
+
+    ipConnection client(cliFD);
+    client.sendData("h-ID?");
+    client.readData(buffer);
+
+    ipConnection lamp(lampFD);
+    lamp.sendData(buffer);          //send lamp client id
+    lamp.readData(buffer);
+    client.sendData(buffer);        //send client token number
+
+    std::cout<<"Exiting thread..."<<std::endl;
+    client.cleanUp();
+    pthread_exit(NULL);
+}
+
+int main() {
+
+    std::cout<<"Mornin! Waiting for lamp client"<<std::endl;
+
+    listenner lampList(lamPort);
+
+    lampFD=lampList.acceptNewClient();
+    ipConnection lamp(lampFD);
+    lamp.readData(buffer);
+    if ((buffer[0]!='l')&&(buffer[0]!='p')){
+        std::cout<<"wrong lamp client"<<std::endl;
+    }
+    lamp.sendData("ok");
+
+    std::cout<<"Mornin! Welcome to RemoteLamp. New session? (y/n): ";
+    char inp;
+    std::cin>>inp;
+    if (inp!='y'){
+        exit(0);
+    }
+    std::cout<<"Enter number of participants: ";
+    int nPart;
+    std::cin>>nPart;
+
+    lamp.sendData("ns");
+    lamp.readData(buffer);
+    if ((buffer[0]!='n')&&(buffer[1]!='p')){
+        std::cout<<"Wrong ack upon session creation"<<std::endl;
+        lamp.cleanUp();
+        exit(0);
+    }
+    char nPartc[5];
+    sprintf(nPartc, "%d", nPart);
+    lamp.sendData(nPartc);
+
+    //TODO-save config in a file to open later
+
+    int i=1;
+    while(i<=nPart){
+
+        lamp.sendData("ap");
+        lamp.readData(buffer);
+        if ((buffer[0]!='I')&&(buffer[1]!='D')){
+            std::cout<<"Wrong ack upon paticipant registration"<<std::endl;
+            lamp.cleanUp();
+            exit(0);
+        }
+
+        std::cout<<"Name/ID of participant "<<nPart<<" : ";
+        std::cin>>buffer;
+        lamp.sendData(buffer);
+
+        lamp.readData(buffer);
+        if ((buffer[0]!='a')&&(buffer[1]!='f')){
+            std::cout<<"Wrong ack upon paticipant registration phase 2"<<std::endl;
+            lamp.cleanUp();
+            exit(0);
+        }
+
+        nPart=nPart+1;
+    }
+
+
+    std::cout << "Starting listenner for clients" << std::endl;
+
+    pthread_t cliThread[nPart];
+
+    listenner listenner(cliPORT);
+
+    bool stop=false;
+    int threadNo=0;
+    while((threadNo<=nPart)&&(!stop)){
+
+        int fD=listenner.acceptNewClient();
+        std::cout<<"got new client, creating thread..."<<std::endl;
+
+        int rc = pthread_create(&cliThread[threadNo], NULL, clientHandler, &fD);
+        if (rc) {
+            std::cout << "Error:unable to create thread," << rc << std::endl;
+        }
+
+        threadNo=threadNo+1;
+    }
+    std::cout << "Max clients reached, stopping listenner" << std::endl;
+    listenner.stopListening();
+    pthread_exit(NULL);
+}
