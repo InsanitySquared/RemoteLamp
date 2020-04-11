@@ -5,7 +5,7 @@
       <paths name="RanaNet-Server (ccf91f3a-b484-44e6-bc25-63c45b828584)">
         <serverdata>
           <mappings>
-            <mapping deploy="/tmp/tmp.5i1EO3aF7B" local="$PROJECT_DIR$" />
+            <mapping deploy="/home/tharindu/RemoteLamp_Server" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-rananet-server" />

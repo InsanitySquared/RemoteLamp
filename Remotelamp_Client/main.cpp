@@ -15,6 +15,8 @@ int main() {
     server.readData(buffer);
     if((buffer[0]!='h')&&(buffer[1]!='i')){
         std::cout<<"Wrong server"<<std::endl;
+        server.cleanUp();
+        return 1;
     }
     server.sendData("yo");
 
